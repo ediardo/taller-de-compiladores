@@ -9,4 +9,3 @@ except IOError:
   print "No se pudo abrir el archivo", file_name
 
 l = Lexical(file_contents)
-print l.isDigit('1')
