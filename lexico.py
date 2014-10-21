@@ -10,19 +10,10 @@ class Lexical:
 
   def __init__(self, raw_string):
     self.raw_string = raw_string
-    self.states = [
-      # alpha, digit, dot, +, -, *,  _, EOL
-      [1, 3, -1, 4, 4, 4, 4, 4, 4, 1],
-      [128, 128, -1, -1, -1, -1, -1 , -1, -1, 128],
-      [-1, 128, -1, -1, -1, -1, -1, -1, -1, -1],
-      [-1, 128, 128, -1, -1, -1, -1, -1, -1, -1],
-      [-1, -1, -1, 128, 128, 128, 128, 128, 128, -1],
-      ]
     self.generate()
 
   def generate(self):
-    position = 0
-    symbol = None
+    index = 0
     for line in StringIO.StringIO(self.raw_string):
       current_state = 0
       previous_state = None 
@@ -37,6 +28,8 @@ class Lexical:
               previous_state, current_state = current_state, 2
             elif self.is_underscore(char):
               previous_state, current_state = current_state, 1
+            elif self.is_arithmetic(char):
+              previous_state, current_state = current_state, 4
             continue 
 
           if current_state == 1:
@@ -48,6 +41,8 @@ class Lexical:
 
             elif self.is_underscore(char):
               previous_state, current_state = current_state, 1
+            else:
+
             continue
 
           if current_state == 2:
