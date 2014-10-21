@@ -21,29 +21,50 @@ class Lexical:
     self.generate()
 
   def generate(self):
-    current_state = 0
-    previous_state = None 
     position = 0
     symbol = None
     for line in StringIO.StringIO(self.raw_string):
-      for char in line:
-        if current_state != self.accept_state and current_state != self.error_state:
-          position += position
-          if self.is_blank(char):
-            if current_state == 0:
-              continue
-            else:
-              previous_state, current_state = current_state, self.accept_state 
-          if current_state != self.accept_state:
-            symbol = self.char_to_symbol(char)
-        
-          if symbol < 0:
-            break
+      current_state = 0
+      previous_state = None 
+      for index, char in enumerate(line):
+        if not self.is_blank(char) and char != '\n':
+          print index, char, previous_state, current_state  
+          
+          if current_state == 0:
+            if self.is_alpha(char):
+              previous_state, current_state = current_state, 1
+            elif self.is_digit(char):
+              previous_state, current_state = current_state, 2
+            elif self.is_underscore(char):
+              previous_state, current_state = current_state, 1
+            continue 
 
-          if symbol >= 0 and symbol <= 9 and current_state != self.accept_state:
-            previous_state, current_state = current_state, self.states[current_state][symbol]
-          print previous_state, current_state
+          if current_state == 1:
+            if self.is_alpha(char):
+              previous_state, current_state = current_state, 1
 
+            elif self.is_digit(char):
+              previous_state, current_state = current_state, 1
+
+            elif self.is_underscore(char):
+              previous_state, current_state = current_state, 1
+            continue
+
+          if current_state == 2:
+            if self.is_digit(char):
+              previous_state, current_state = current_state, 2
+
+            elif self.is_dot(char):
+              previous_state, current_state = current_state, 3
+            continue
+
+          if current_state == 3:
+            if self.is_digit(char):
+              previous_state, current_state = current_state, 3
+            continue
+        else:
+          current_state = 0
+          previous_state = None 
 
         
         
