@@ -24,9 +24,40 @@ class Lexical:
     while current_state != self.accept_state and current_state != self.error_state:
       for line in StringIO.StringIO(self.raw_string):
         for char in line:
-          self.scanner(char)
-          if char != '\n' and current_state == 0 and char != :
-            if
+          #self.scanner(char)
+          swic
+          
+            case 0 
+            if isdi c_sta=1
+            if isalpha c_sta=2
+            if + c_sta=3
+            if - c_sta=4
+            
+            
+            
+            case 1 if isdi c_sta=1
+            if . c_sta=10
+            
+            case 10
+            if isdi c_sta=11
+            
+            case 11
+            if isdi c_sta=1
+            
+            case 2 
+            if isalpha c_sta=2
+            
+            case 4
+            
+          
+          
+          swich (c_state)
+          
+          case 1 int 
+          case 11 
+        
+        
+        
           
   def scanner(self, char):
     if self.isDigit(char): return 1
