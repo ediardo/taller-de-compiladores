@@ -2,11 +2,7 @@ import sys
 import StringIO
 
 class Lexical:
-  error_state = -1 
-  accept_state = 128
   raw_string = None
-  end_of_file = None
-  states = None 
 
   def __init__(self, raw_string):
     self.raw_string = raw_string
@@ -28,8 +24,10 @@ class Lexical:
               previous_state, current_state = current_state, 2
             elif self.is_underscore(char):
               previous_state, current_state = current_state, 1
-            elif self.is_arithmetic(char):
+            elif self.is_arithmetic_sum(char):
               previous_state, current_state = current_state, 4
+            else:
+              error_state = True
             continue 
 
           if current_state == 1:
@@ -41,8 +39,9 @@ class Lexical:
 
             elif self.is_underscore(char):
               previous_state, current_state = current_state, 1
+              accept_state = True
             else:
-
+              error_state = True
             continue
 
           if current_state == 2:
