@@ -1,68 +1,59 @@
 import sys
 import StringIO
+import csv
 
 class Lexical:
   raw_string = None
+  symbols = []
+  states = []
 
   def __init__(self, raw_string):
     self.raw_string = raw_string
+    with open("states.csv") as f:
+      reader = csv.reader(f)
+      for row, state in enumerate(reader):
+        if row != 0:
+          self.states.append(state)
+        else:
+          self.symbols = state
+
     self.generate()
 
   def generate(self):
-    index = 0
+    total_symbols = len(self.symbols)
     for line in StringIO.StringIO(self.raw_string):
       current_state = 0
       previous_state = None 
-      for index, char in enumerate(line):
+      position = 0 
+      while position < len(line):
+        symbol = None
+        char = line[position]
+        position += 1
         if not self.is_blank(char) and char != '\n':
-          print index, char, previous_state, current_state  
-          
-          if current_state == 0:
-            if self.is_alpha(char):
-              previous_state, current_state = current_state, 1
-            elif self.is_digit(char):
-              previous_state, current_state = current_state, 2
-            elif self.is_underscore(char):
-              previous_state, current_state = current_state, 1
-            elif self.is_arithmetic_sum(char):
-              previous_state, current_state = current_state, 4
+          symbol = self.char_to_symbol(char)
+          if symbol >= 0 and symbol < total_symbols:
+            if self.states[current_state][symbol] != '':
+              previous_state, current_state = current_state, int(self.states[current_state][symbol]) 
+              print previous_state, current_state, position, char 
             else:
-              error_state = True
-            continue 
+              previous_state, current_state = current_state, 0
+              position -= 1
 
-          if current_state == 1:
-            if self.is_alpha(char):
-              previous_state, current_state = current_state, 1
+        if previous_state == 1:
+          print self.symbols[current_state - 1]
+        if previous_state == 2:
+          print self.symbols[current_state - 1]
+        if previous_state == 3:
+          print self.symbols[current_state - 1]
+        if previous_state == 4:
+          print self.symbols[current_state - 1]
+        if previous_state == 5:
+          print self.symbols[current_state - 1]
+       
 
-            elif self.is_digit(char):
-              previous_state, current_state = current_state, 1
+  def get_next_state(self, state, symbol):
+    return self.states[state][symbol]
 
-            elif self.is_underscore(char):
-              previous_state, current_state = current_state, 1
-              accept_state = True
-            else:
-              error_state = True
-            continue
-
-          if current_state == 2:
-            if self.is_digit(char):
-              previous_state, current_state = current_state, 2
-
-            elif self.is_dot(char):
-              previous_state, current_state = current_state, 3
-            continue
-
-          if current_state == 3:
-            if self.is_digit(char):
-              previous_state, current_state = current_state, 3
-            continue
-        else:
-          current_state = 0
-          previous_state = None 
-
-        
-        
-          
   def char_to_symbol(self, char):
     if self.is_alpha(char): 
       return 0
@@ -70,21 +61,36 @@ class Lexical:
       return 1
     if self.is_dot(char):
       return 2 
-    if self.is_arithmetic_sum(char): 
+    if self.is_plus(char):
       return 3
-    if self.is_underscore(char): 
+    if self.is_minus(char):
+      return 4
+    if self.is_star(char):
+      return 5
+    if self.is_percentage(char):
+      return 6
+    if self.is_equals(char):
+      return 7
+    if self.is_slash(char):
+      return 8
+    if self.is_underscore(char):
       return 9
+    if self.is_less_than(char):
+      return 10
+    if self.is_greater_than(char):
+      return 11
+    if self.is_open_parenthesis(char):
+      return 12
+    if self.is_close_parenthesis(char):
+      return 13
+    if self.is_bang(char):
+      return 14
+    if self.is_pipe(char):
+      return 15
+    if self.is_ampersand(char):
+      return 16
     return -1
 
-  def is_underscore(self, char):
-    if char == '_': 
-      return True
-    return False
-
-  def is_dot(self, char):
-    if char == '.':
-      return True
-    return False
 
   def is_blank(self, char):
     if char == ' ' or char == '\t':
@@ -97,7 +103,79 @@ class Lexical:
   def is_digit(self, char):
     return char.isdigit()
 
-  def is_arithmetic_sum(self, char):
+  def is_dot(self, char):
+    if char == '.':
+      return True
+    return False
+
+  def is_plus(self, char):
     if char == '+':
       return True
     return False
+
+  def is_minus(self, char):
+    if char == '-':
+      return True
+    return False
+
+  def is_star(self, char):
+    if char == '*':
+      return True
+    return False
+
+  def is_percentage(self, char):
+    if char == '%':
+      return True
+    return False
+
+  def is_equals(self, char):
+    if char == '=':
+      return True
+
+  def is_slash(self, char):
+    if char == '/':
+      return True
+    return False
+
+  def is_underscore(self, char):
+    if char == '_': 
+      return True
+    return False
+
+  def is_less_than(self, char):
+    if char == '<':
+      return True
+    return False
+
+  def is_greater_than(self, char):
+    if char == '>':
+      return True
+    return False
+
+  def is_open_parenthesis(self, char):
+    if char == '(':
+      return True
+    return False
+
+  def is_close_parenthesis(self, char):
+    if char == ')':
+      return True
+    return False
+
+  def is_bang(self, char):
+    if char == '!':
+      return True
+    return False
+
+  def is_pipe(self, char):
+    if char == '|':
+      return True
+    return False
+
+  def is_ampersand(self, char):
+    if char == '&':
+      return True
+    return False
+
+
+
