@@ -21,6 +21,7 @@ class Lexical:
 
   def generate(self):
     total_symbols = len(self.symbols)
+    total_states = len(self.states)
     for line in StringIO.StringIO(self.raw_string):
       current_state = 0
       previous_state = None 
@@ -39,16 +40,10 @@ class Lexical:
               previous_state, current_state = current_state, 0
               position -= 1
 
-        if previous_state == 1:
-          print self.states[previous_state][-1]
-        if previous_state == 2:
-          print self.states[previous_state][-1]
-        if previous_state == 3:
-          print self.states[previous_state][-1]
-        if previous_state == 4:
-          print self.states[previous_state][-1]
-        if previous_state == 5:
-          print self.symbols[previous_state][-1]
+        if current_state == 0:
+          for state in range(total_states):
+            if previous_state == state:
+              print self.states[previous_state][-1]
 
   def get_next_state(self, state, symbol):
     return self.states[state][symbol]
