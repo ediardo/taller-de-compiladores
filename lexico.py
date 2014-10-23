@@ -25,7 +25,7 @@ class Lexical:
       current_state = 0
       previous_state = None 
       position = 0 
-      while position < len(line):
+      while position < len(line) and current_state != '':
         symbol = None
         char = line[position]
         position += 1
@@ -40,16 +40,15 @@ class Lexical:
               position -= 1
 
         if previous_state == 1:
-          print self.symbols[current_state - 1]
+          print self.states[previous_state][-1]
         if previous_state == 2:
-          print self.symbols[current_state - 1]
+          print self.states[previous_state][-1]
         if previous_state == 3:
-          print self.symbols[current_state - 1]
+          print self.states[previous_state][-1]
         if previous_state == 4:
-          print self.symbols[current_state - 1]
+          print self.states[previous_state][-1]
         if previous_state == 5:
-          print self.symbols[current_state - 1]
-       
+          print self.symbols[previous_state][-1]
 
   def get_next_state(self, state, symbol):
     return self.states[state][symbol]
