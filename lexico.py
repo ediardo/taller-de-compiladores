@@ -39,6 +39,8 @@ class Lexical:
             else:
               previous_state, current_state = current_state, 0
               position -= 1
+          else:
+            print "wrong"
 
         if current_state == 0:
           for state in range(total_states):
