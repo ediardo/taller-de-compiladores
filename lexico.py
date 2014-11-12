@@ -9,6 +9,7 @@ class Lexical:
 
   def __init__(self, raw_string):
     self.raw_string = raw_string
+    print raw_string
     with open("states.csv") as f:
       reader = csv.reader(f)
       for row, state in enumerate(reader):
@@ -22,7 +23,10 @@ class Lexical:
   def generate(self):
     total_symbols = len(self.symbols)
     total_states = len(self.states)
+    line_number = 0
+    lexema = ""
     for line in StringIO.StringIO(self.raw_string):
+      line_number += 1
       current_state = 0
       previous_state = None 
       position = 0 
@@ -35,17 +39,22 @@ class Lexical:
           if symbol >= 0 and symbol < total_symbols:
             if self.states[current_state][symbol] != '':
               previous_state, current_state = current_state, int(self.states[current_state][symbol]) 
-              print previous_state, current_state, position, char 
+              lexema += char
+#              print "Previous state: ", str(previous_state), ", current state:", str(current_state), ", Line: ", str(line_number), ", position: ", str(position), ", char: ", char 
             else:
               previous_state, current_state = current_state, 0
               position -= 1
           else:
-            print "wrong"
+            print "{} {} UNKOWN: {}".format(line_number, position, char)
+        else:
+          if current_state > 0:
+            previous_state, current_state = current_state, 0
 
         if current_state == 0:
           for state in range(total_states):
             if previous_state == state:
-              print self.states[previous_state][-1]
+              print "{} {} {}: {}".format(line_number, position, self.states[previous_state][-1],lexema)
+              lexema = ""
 
   def get_next_state(self, state, symbol):
     return self.states[state][symbol]
