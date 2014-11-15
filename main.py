@@ -1,11 +1,19 @@
 import sys
-from lexico import *
+from lexer import *
+from parsing import *
 file_contents = None
 file_name = None
-try:
-  file_name = sys.argv[1]
-  file_contents = open(file_name, 'r').read()
-except IOError:
-  print "No se pudo abrir el archivo", file_name
+file_name = sys.argv[1]
+file_contents = open(file_name, 'r').readlines()
+lexical_analyzer = Lexer()
+token = None
+for line in file_contents:
+  print line
 
-l = Lexical(file_contents)
+  #while token != False:
+   # token = lexical_analyzer.generate(line)
+    #if token == False:
+     # break
+#    else:  
+ #     print token
+
