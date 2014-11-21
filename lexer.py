@@ -24,6 +24,7 @@ class Lexer:
     lexeme = ""
     current_state = 0
     previous_state = None 
+    self.position = 0
     while self.position < len(line) and current_state != '':
       symbol = None
       char = line[self.position]
@@ -38,16 +39,15 @@ class Lexer:
             previous_state, current_state = current_state, 0
             self.position -= 1
         else:
-          return False
+          yield None
       else:
         if current_state > 0:
           previous_state, current_state = current_state, 0
       if current_state == 0:
         for state in range(total_states):
           if previous_state == state:
-            return dict({'name': self.states[previous_state][-1], 'lexeme': lexeme})
-
-    return None
+            yield dict({'name': self.states[previous_state][-1], 'lexeme': lexeme})
+            lexeme = ""
 
   def get_next_state(self, state, symbol):
     return self.states[state][symbol]
