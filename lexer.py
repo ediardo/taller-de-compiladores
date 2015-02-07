@@ -5,11 +5,10 @@ import csv
 class Lexer:
   symbols = []
   states = []
-  line_number = 0
-  position = 0
   EOF = False
+  file_contents = None
 
-  def __init__(self):
+  def __init__(self, file_contents):
     with open("states.csv") as f:
       reader = csv.reader(f)
       for row, state in enumerate(reader):
@@ -17,37 +16,41 @@ class Lexer:
           self.states.append(state)
         else:
           self.symbols = state
+    self.file_contents = file_contents
 
-  def generate(self, line):
+  def generate(self):
     total_symbols = len(self.symbols)
     total_states = len(self.states)
     lexeme = ""
     current_state = 0
     previous_state = None 
-    self.position = 0
-    while self.position < len(line) and current_state != '':
-      symbol = None
-      char = line[self.position]
-      self.position += 1
-      if not self.is_blank(char):
-        symbol = self.char_to_symbol(char)
-        if symbol >= 0 and symbol < total_symbols:
-          if self.states[current_state][symbol] != '':
-            previous_state, current_state = current_state, int(self.states[current_state][symbol]) 
-            lexeme += char
+    start_col_position = 0
+    col_position = 0
+    for line_pos, line in enumerate(self.file_contents):
+      while col_position < len(line) and current_state != '':
+        symbol = None
+        char = line[col_position]
+        col_position += 1
+        if not self.is_blank(char):
+          symbol = self.char_to_symbol(char)
+          if symbol >= 0 and symbol < total_symbols:
+            if self.states[current_state][symbol] != '':
+              previous_state, current_state = current_state, int(self.states[current_state][symbol]) 
+              lexeme += char
+            else:
+              previous_state, current_state = current_state, 0
+              col_position -= 1
           else:
-            previous_state, current_state = current_state, 0
-            self.position -= 1
+            yield None
         else:
-          yield None
-      else:
-        if current_state > 0:
-          previous_state, current_state = current_state, 0
-      if current_state == 0:
-        for state in range(total_states):
-          if previous_state == state:
-            yield dict({'name': self.states[previous_state][-1], 'lexeme': lexeme})
-            lexeme = ""
+          if current_state > 0:
+            previous_state, current_state = current_state, 0
+            start_col_position = col_position
+        if current_state == 0:
+          for state in range(total_states):
+            if previous_state == state:
+              yield dict({'column': start_col_position, 'name': self.states[previous_state][-1], 'lexeme': lexeme, 'line': line_pos + 1})
+              lexeme = ""
 
   def get_next_state(self, state, symbol):
     return self.states[state][symbol]
