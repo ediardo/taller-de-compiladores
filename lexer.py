@@ -7,7 +7,7 @@ class Lexer:
   states = []
   EOF = False
   file_contents = None
-
+  keywords = ['int', 'decimal', 'string', 'boolean', 'void', 'for', 'function', 'while', 'print', 'case', 'return']
   def __init__(self, file_contents):
     with open("states.csv") as f:
       reader = csv.reader(f)
@@ -23,10 +23,10 @@ class Lexer:
     total_states = len(self.states)
     lexeme = ""
     current_state = 0
-    previous_state = None 
-    start_col_position = 0
-    col_position = 0
+    # loop every line
     for line_pos, line in enumerate(self.file_contents):
+      col_position = 0
+      previous_state = None
       while col_position < len(line) and current_state != '':
         symbol = None
         char = line[col_position]
@@ -45,11 +45,11 @@ class Lexer:
         else:
           if current_state > 0:
             previous_state, current_state = current_state, 0
-            start_col_position = col_position
         if current_state == 0:
           for state in range(total_states):
             if previous_state == state:
-              yield dict({'column': start_col_position, 'name': self.states[previous_state][-1], 'lexeme': lexeme, 'line': line_pos + 1})
+              lexeme_name = self.states[previous_state][-1]
+              yield dict({'name': lexeme_name, 'lexeme': lexeme, 'line': line_pos + 1})
               lexeme = ""
 
   def get_next_state(self, state, symbol):
@@ -94,6 +94,8 @@ class Lexer:
       return 17
     if self.is_right_brace(char):
       return 18
+    if self.is_semicolon(char):
+      return 19
     return -1
 
 
@@ -191,6 +193,27 @@ class Lexer:
     if char == '}':
       return True
     return False
+  def is_semicolon(self, char):
+    if char == ';':
+      return True
+    return False
 
+  def is_keyword(self, lexeme):
+    if lexeme == 'for':
+      return True
+    if lexeme == 'while':
+      return True
+    if lexeme == 'int':
+      return True
+    if lexeme == 'decimal':
+      return True
+    if lexeme == 'string':
+      return True
+    if lexeme == 'boolean':
+      return True
+    if lexeme == 'void':
+      return True
+    if lexeme == 'function':
+      return True
 
 

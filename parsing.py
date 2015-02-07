@@ -1,6 +1,6 @@
 class Parsing:
   
-  def __init__(self, token):
+  def __init__(self):
     pass
 
   
