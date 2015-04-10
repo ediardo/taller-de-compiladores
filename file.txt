@@ -1,6 +1,1 @@
-/* ASDDFAS
-*/
-// asasdfasdf
-function hola(int a){
-  int hola = 123 + 12;
-}
+hola 123

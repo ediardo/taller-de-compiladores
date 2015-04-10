@@ -7,7 +7,7 @@ class Lexer:
   states = []
   EOF = False
   file_contents = None
-  keywords = ['int', 'decimal', 'string', 'boolean', 'void', 'for', 'function', 'while', 'print', 'case', 'return']
+  keywords = ['def', 'int', 'decimal', 'string', 'boolean', 'void', 'for', 'function', 'while', 'print', 'case', 'return']
   def __init__(self, file_contents):
     with open("states.csv") as f:
       reader = csv.reader(f)
@@ -49,6 +49,8 @@ class Lexer:
           for state in range(total_states):
             if previous_state == state:
               lexeme_name = self.states[previous_state][-1]
+              if lexeme in self.keywords:
+                lexeme_name = lexeme
               yield dict({'name': lexeme_name, 'lexeme': lexeme, 'line': line_pos + 1})
               lexeme = ""
 
@@ -216,4 +218,6 @@ class Lexer:
     if lexeme == 'function':
       return True
 
-
+if __name__ == "__main__":
+  lex = Lexer('file.txt')
+  lex.start()
