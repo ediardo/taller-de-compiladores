@@ -98,6 +98,8 @@ class Lexer:
       return 18
     if self.is_semicolon(char):
       return 19
+    if self.is_comma(char):
+      return 20
     return -1
 
 
@@ -197,6 +199,10 @@ class Lexer:
     return False
   def is_semicolon(self, char):
     if char == ';':
+      return True
+    return False
+  def is_comma(self, char):
+    if char == ',':
       return True
     return False
 

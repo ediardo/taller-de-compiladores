@@ -1,1 +1,3 @@
-hola 123
+function hola(hola){
+
+}
