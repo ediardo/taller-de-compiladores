@@ -33,52 +33,26 @@ class Lexer:
         # column character position +1 for offset
         col_position += 1
         # if char is not null
-        if not self.is_blank(char):
-          symbol = self.char_to_symbol(char)
-          # if char is a valid symbol 
-          if symbol in range(0, total_symbols):
-            previous_state, current_state = current_state, self.get_next_state(current_state, symbol)
-            print "Char: ", char, ", Line: ", line_pos + 1, ", Col: ", col_position, ", Symbol: ", symbol, ", Prev State: ", previous_state, ", Current state: ", current_state
-            if current_state == 'A' or int(current_state) == 0:
-              print lexeme
-              lexeme = ""
-              col_position -= 1
-              current_state = 0 
-            else:
-              lexeme += char
-        else:
+        symbol = self.char_to_symbol(char)
+        # if char is a valid symbol 
+        if symbol in range(0, total_symbols):
+          previous_state, current_state = current_state, self.get_next_state(current_state, symbol)
           if current_state == 'A':
-            current_state = 0
-      """
-      while col_position < len(line) and current_state != 'A':
-        symbol = None
-        char = line[col_position]
-        col_position += 1
-        if not self.is_blank(char):
-          symbol = self.char_to_symbol(char)
-          if symbol >= 0 and symbol < total_symbols:
-            if self.states[current_state][symbol] != 'E':
-              previous_state, current_state = current_state, int(self.states[current_state][symbol]) 
-              lexeme += char
-            else:
-              previous_state, current_state = current_state, 0
-              col_position -= 1
+            lexeme_name = self.states[int(previous_state)][-1]
+            if lexeme in self.keywords:
+              lexeme_name = lexeme
+            #print "Char: ", char, ", Line: ", line_pos + 1, ", Col: ", col_position, ", Symbol: ", symbol, ", Prev State: ", previous_state, ", Current state: ", current_state
+            yield dict({'name': lexeme_name, 'lexeme': lexeme, 'line': line_pos + 1})
+            lexeme = ""
+            col_position -= 1
+            current_state = 0 
+          elif current_state == 'E':
+            print "error"
           else:
-            yield None
+            if not self.is_blank(char):
+              lexeme += char
         else:
-          if current_state > 0:
-            previous_state, current_state = current_state, 0
-
-        if current_state == 0:
-          for state in range(total_states):
-            if previous_state == state:
-              lexeme_name = self.states[previous_state][-1]
-              if lexeme in self.keywords:
-                lexeme_name = lexeme
-              print dict({'name': lexeme_name, 'lexeme': lexeme, 'line': line_pos + 1})
-              lexeme = ""
-    """
-
+          print "error2"
 
   def get_next_state(self, state, symbol):
     if type(self.states[int(state)][int(symbol)]) is int:
@@ -128,6 +102,8 @@ class Lexer:
       return 19
     if self.is_comma(char):
       return 20
+    if self.is_blank(char):
+      return 21
     return -1
 
 
