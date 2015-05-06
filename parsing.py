@@ -25,8 +25,6 @@ class Parsing:
   def program(self):
     if self.accept('function'): 
       self.function()
-    if self.accept('identifier'):
-        self.assignment()
 
   def params(self):
     if self.accept('identifier'):
@@ -51,21 +49,26 @@ class Parsing:
   
   def statement(self):
     if self.accept('identifier'):
-      if self.accept('assignment')
+      if self.accept('assignment'):
         self.expression()
       elif self.accept('left_parenthesis'):
         self.params()
 
   def expression(self):
     if self.accept('arithmetic_addition'):
-      self.factor() 
+      pass 
     elif self.accept('arithmetic_subtraction'):
       pass
+    self.term() 
+    while True:
+      if not (self.accept('arithmetic_addition') or self.accept('arithmetic_subtraction')):
+        break
+      self.term()
 
   def term(self):
     self.factor()
     while True:
-      if not self.accept('arithmetic_multiplication') or not self.accept('arithmetic_division'):
+      if not (self.accept('arithmetic_multiplication') or self.accept('arithmetic_division')):
         break
       self.factor()
 
@@ -78,12 +81,9 @@ class Parsing:
     elif self.accept('integer_number'):
       pass
     elif self.accept('left_parenthesis'):
-      self.expression
+      self.expression()
       self.expect('right_parenthesis')
     else:
       print "error factor"
     
 
-  def assignment(self):
-    self.expect('assignment')
-    self.factor()

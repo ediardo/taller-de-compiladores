@@ -37,18 +37,9 @@ class Lexer:
           symbol = self.char_to_symbol(char)
           # if char is a valid symbol 
           if symbol in range(0, total_symbols):
-            previous_state, current_state = current_state, self.get_next_state(current_state, symbol)
-            print "Char: ", char, ", Line: ", line_pos + 1, ", Col: ", col_position, ", Symbol: ", symbol, ", Prev State: ", previous_state, ", Current state: ", current_state
-            if current_state == 'A' or int(current_state) == 0:
-              print lexeme
-              lexeme = ""
-              col_position -= 1
-              current_state = 0 
-            else:
-              lexeme += char
-        else:
-          if current_state == 'A':
-            current_state = 0
+            previous_state, current_state = current_state, int(elf.states[current_state][symbol])
+            print char, symbol, col_position, line_pos + 1, previous_state, current_state, "valid"
+
       """
       while col_position < len(line) and current_state != 'A':
         symbol = None
@@ -68,7 +59,6 @@ class Lexer:
         else:
           if current_state > 0:
             previous_state, current_state = current_state, 0
-
         if current_state == 0:
           for state in range(total_states):
             if previous_state == state:
@@ -81,9 +71,7 @@ class Lexer:
 
 
   def get_next_state(self, state, symbol):
-    if type(self.states[int(state)][int(symbol)]) is int:
-      return int(self.states[int(state)][int(symbol)])
-    return self.states[int(state)][int(symbol)]
+    return self.states[state][symbol]
 
   def char_to_symbol(self, char):
     if self.is_alpha(char): 
