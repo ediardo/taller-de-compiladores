@@ -59,7 +59,7 @@ class Parsing:
   def statement(self):
     if self.accept('identifier'):
       if self.accept('assignment'):
-        self.expression()
+        self.assignment()
       elif self.accept('left_parenthesis'):
         self.call_function()
       if self.expect('semicolon'):
@@ -69,6 +69,9 @@ class Parsing:
       self.statement()
     elif self.accept('while'):
       self.while_loop()
+      self.statement()
+    elif self.accept('for'):
+      self.for_loop()
       self.statement()
 
   def expression(self):
@@ -102,7 +105,9 @@ class Parsing:
       self.expect('right_parenthesis')
     else:
       print "error factor"
-  
+  def assignment(self):
+     self.expression() 
+
   def condition(self):
     if self.expect('left_parenthesis'):
       self.expression()
@@ -124,6 +129,37 @@ class Parsing:
 
   def while_loop(self):
     self.condition()
+
+  def for_loop(self):
+    self.expect('left_parenthesis')
+    if self.accept('identifier'):
+      if self.accept('assignment'):
+        self.assignment()
+      else:
+        pass
+    self.expect('semicolon')
+    self.expression()
+    if self.accept('comparison_less_than'):
+      pass
+    elif self.accept('comparison_less_than_or_equal'):
+      pass
+    elif self.accept('comparison_equal'):
+      pass
+    elif self.accept('comparison_greater_than'):
+      pass
+    else:
+      print "error comparativo"  
+    self.expression()
+    self.expect('semicolon')
+    self.expect('identifier')
+    if self.accept('increment'):
+      pass
+    elif self.accept('decrement'):
+      pass
+    self.expect('right_parenthesis')
+    self.expect('left_brace')
+    self.statement()
+    self.expect('right_brace')
 
   def call_function(self):
     self.params()
