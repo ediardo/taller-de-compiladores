@@ -7,7 +7,7 @@ class Lexer:
   states = []
   EOF = False
   file_contents = None
-  keywords = ['if', 'switch','break','default','true', 'false', 'nil', 'def', 'int', 'decimal', 'string', 'import', 'boolean', 'void', 'for', 'function', 'while', 'print', 'case', 'return']
+  keywords = ['if', 'else','elif', 'switch','break','default','true', 'false', 'nil', 'def', 'int', 'decimal', 'string', 'import', 'boolean', 'void', 'for', 'function', 'while', 'print', 'case', 'return']
   def __init__(self, file_contents):
     with open("states.csv") as f:
       reader = csv.reader(f)
@@ -224,6 +224,14 @@ class Lexer:
     if lexeme == 'boolean':
       return True
     if lexeme == 'void':
+      return True
+    if lexeme == 'switch':
+      return True
+    if lexeme == 'case':
+      return True
+    if lexeme == 'else':
+      return True
+    if lexeme == 'break':
       return True
     if lexeme == 'function':
       return True
