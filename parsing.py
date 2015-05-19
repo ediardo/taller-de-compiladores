@@ -33,8 +33,8 @@ class Parsing:
     self.statement()
 
   def importer(self):
-    if self.expect('identifier'):
-      self.expect('semicolon')
+    self.expect('identifier')
+    self.expect('semicolon')
 
   def params(self):
     self.expression()
@@ -79,7 +79,7 @@ class Parsing:
 
   def expression(self):
     if self.accept('arithmetic_addition'):
-      pass 
+      pass  
     elif self.accept('arithmetic_subtraction'):
       pass
     self.term() 
@@ -99,6 +99,8 @@ class Parsing:
   def factor(self):
     if self.accept('identifier'):
       pass
+    elif self.accept('string'):
+      pass
     elif self.accept('real_number'):
       pass
     elif self.accept('integer_number'):
@@ -110,10 +112,11 @@ class Parsing:
       print "error factor"
 
   def assignment(self):
-     self.expression() 
+    self.expression() 
 
   def string(self):
-    
+    pass
+
   def condition(self):
     self.expression()
     if self.accept('comparison_less_than'):

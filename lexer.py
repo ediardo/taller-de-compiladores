@@ -47,16 +47,19 @@ class Lexer:
             col_position -= 1
             current_state = 0 
           elif current_state == 'E':
-            print "error"
+            print "error sintactico"
+            exit()
           else:
-            if not self.is_blank(char):
+            if current_state == '35':
+              lexeme += char
+            elif not (self.is_blank(char) or self.is_new_line(char)):
               lexeme += char
         else:
           print "error2"
 
   def get_next_state(self, state, symbol):
     if type(self.states[int(state)][int(symbol)]) is int:
-      return int(self.states[int(state)][int(symbol)])
+      return self.states[int(state)][int(symbol)]
     return self.states[int(state)][int(symbol)]
 
   def char_to_symbol(self, char):
@@ -104,11 +107,15 @@ class Lexer:
       return 20
     if self.is_blank(char):
       return 21
+    if self.is_new_line(char):
+      return 22
+    if self.is_single_quote(char):
+      return 23
     return -1
 
 
   def is_blank(self, char):
-    if char == ' ' or char == '\t' or char == '\n':
+    if char == ' ' or char == '\t':
       return True
     return False
 
@@ -201,12 +208,29 @@ class Lexer:
     if char == '}':
       return True
     return False
+
   def is_semicolon(self, char):
     if char == ';':
       return True
     return False
+
   def is_comma(self, char):
     if char == ',':
+      return True
+    return False
+
+  def is_new_line(self, char):
+    if char == '\n':
+      return True
+    return False
+
+  def is_single_quote(self, char):
+    if char == '\'':
+      return True
+    return False
+
+  def is_quotes(self, char):
+    if char == '"':
       return True
     return False
 

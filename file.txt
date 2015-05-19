@@ -1,1 +1,1 @@
-string1 = "hola";
+call_function('asda', 123);
