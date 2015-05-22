@@ -111,6 +111,8 @@ class Lexer:
       return 22
     if self.is_single_quote(char):
       return 23
+    if self.is_colon(char):
+      return 24
     return -1
 
 
@@ -231,6 +233,11 @@ class Lexer:
 
   def is_quotes(self, char):
     if char == '"':
+      return True
+    return False
+
+  def is_colon(self, char):
+    if char ==':':
       return True
     return False
 

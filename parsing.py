@@ -1,5 +1,7 @@
 class Parsing:
-  
+
+  #self.tabsim = []
+    
   def __init__(self, token_generator):
     self.token_generator = token_generator
     self.get_token()
@@ -7,6 +9,10 @@ class Parsing:
 
   def get_token(self):
     self.current_token = next(self.token_generator, None)
+
+  def raise_error(self,type, msg):
+    print type, msg
+    exit()
 
   def accept(self, symbol):
     if self.current_token <> None:
@@ -20,9 +26,10 @@ class Parsing:
     if self.accept(symbol):
       return True
     if self.current_token <> None:
-      print "error: se esperaba " + symbol + " y se leyo " + self.current_token['lexeme']
+      self.raise_error(" ", "error: se esperaba " + symbol + " y se leyo " + self.current_token['lexeme'])
     else:
-      print "error: se esperaba " + symbol + " y se llego al final del programa"
+      self.raise_error("", "error: se esperaba " + symbol + " y se llego al final del programa")
+
     return False
 
   def program(self):
@@ -62,8 +69,8 @@ class Parsing:
         self.assignment()
       elif self.accept('left_parenthesis'):
         self.call_function()
-      if self.expect('semicolon'):
-        self.statement()
+      self.expect('semicolon')
+      self.statement()
     elif self.accept('if'):
       self.if_condition()
       self.statement()
@@ -73,20 +80,27 @@ class Parsing:
     elif self.accept('for'):
       self.for_loop()
       self.statement()
+    elif self.accept('print'):
+      self.print_function()
+      self.expect('semicolon')
+      self.statement()
     elif self.accept('switch'):
       self.switch()
       self.statement()
 
   def expression(self):
-    if self.accept('arithmetic_addition'):
-      pass  
-    elif self.accept('arithmetic_subtraction'):
-      pass
-    self.term() 
-    while True:
-      if not (self.accept('arithmetic_addition') or self.accept('arithmetic_subtraction')):
-        break
-      self.term()
+    if self.accept('string'):
+      self.string()
+    else:
+      if self.accept('arithmetic_addition'):
+        pass  
+      elif self.accept('arithmetic_subtraction'):
+        pass
+      self.term() 
+      while True:
+        if not (self.accept('arithmetic_addition') or self.accept('arithmetic_subtraction')):
+          break
+        self.term()
 
   def term(self):
     self.factor()
@@ -99,8 +113,6 @@ class Parsing:
   def factor(self):
     if self.accept('identifier'):
       pass
-    elif self.accept('string'):
-      pass
     elif self.accept('real_number'):
       pass
     elif self.accept('integer_number'):
@@ -109,13 +121,16 @@ class Parsing:
       self.expression()
       self.expect('right_parenthesis')
     else:
-      print "error factor"
-
+      self.raise_error("", "error factor")
+  
   def assignment(self):
     self.expression() 
 
   def string(self):
-    pass
+    while True:
+      if not self.accept('arithmetic_addition'):
+        break
+      self.expression()
 
   def condition(self):
     self.expression()
@@ -130,7 +145,7 @@ class Parsing:
     elif self.accept('comparison_greater_than'):
       pass
     else:
-      print "error comparativo"  
+      self.raise_error("", "error comparativo")
     self.expression()
 
   def if_condition(self):
@@ -168,7 +183,7 @@ class Parsing:
     elif self.accept('comparison_greater_than'):
       pass
     else:
-      print "error comparativo"  
+      self.raise_error("", "error comparativo")
     self.expression()
     self.expect('semicolon')
     self.expect('identifier')
@@ -185,11 +200,25 @@ class Parsing:
     self.expect('left_parenthesis')
     self.expression()
     self.expect('right_parenthesis')
-    self.expect('right_brace')
-    self.expect('case')
+    self.expect('left_brace')
+    while True:
+      if not self.accept('case'):
+        self.raise_error("", "error case")
+        break
+      else:
+        self.expression()
+        self.expect('colon')
+      self.statement()
 
+  
+  def print_function(self):
+    if self.accept('string'):
+      self.string()
+    else:
+      self.expression() 
+     
   def call_function(self):
     self.params()
 
-
-
+  def search_tabsym(self, item):
+    pass 

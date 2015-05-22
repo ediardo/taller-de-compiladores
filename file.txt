@@ -1,1 +1,2 @@
-call_function('asda', 123);
+a = 'as';
+print2('holasdf' / 123);
