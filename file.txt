@@ -1,2 +1,8 @@
-a = 'as';
-print2('holasdf' / 123);
+function _hola(a, b, ''){
+  a = 'hola';
+}
+
+function _hola1(a){
+
+  print 'si';
+}

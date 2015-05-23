@@ -89,18 +89,15 @@ class Parsing:
       self.statement()
 
   def expression(self):
-    if self.accept('string'):
-      self.string()
-    else:
-      if self.accept('arithmetic_addition'):
+    if self.accept('arithmetic_addition'):
         pass  
-      elif self.accept('arithmetic_subtraction'):
-        pass
-      self.term() 
-      while True:
-        if not (self.accept('arithmetic_addition') or self.accept('arithmetic_subtraction')):
-          break
-        self.term()
+    elif self.accept('arithmetic_subtraction'):
+      pass
+    self.term() 
+    while True:
+      if not (self.accept('arithmetic_addition') or self.accept('arithmetic_subtraction')):
+        break
+      self.term()
 
   def term(self):
     self.factor()
@@ -109,13 +106,14 @@ class Parsing:
         break
       self.factor()
 
-
   def factor(self):
     if self.accept('identifier'):
       pass
     elif self.accept('real_number'):
       pass
     elif self.accept('integer_number'):
+      pass
+    elif self.accept('string'):
       pass
     elif self.accept('left_parenthesis'):
       self.expression()
@@ -125,12 +123,6 @@ class Parsing:
   
   def assignment(self):
     self.expression() 
-
-  def string(self):
-    while True:
-      if not self.accept('arithmetic_addition'):
-        break
-      self.expression()
 
   def condition(self):
     self.expression()
@@ -212,10 +204,7 @@ class Parsing:
 
   
   def print_function(self):
-    if self.accept('string'):
-      self.string()
-    else:
-      self.expression() 
+    self.expression() 
      
   def call_function(self):
     self.params()
