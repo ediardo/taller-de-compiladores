@@ -14,11 +14,12 @@ class Parsing:
     print type, msg
     exit()
 
-  def accept(self, symbol):
+  def accept(self, symbol, next=True):
     if self.current_token <> None:
       if self.current_token['name'] == symbol:
         print self.current_token
-        self.get_token()
+        if next:
+          self.get_token()
         return True
     return False
   
@@ -35,9 +36,12 @@ class Parsing:
   def program(self):
     while self.accept('import'): 
       self.importer()
+    else:
+      self.statement()
     while self.accept('function'):
       self.function()
-    self.statement()
+    else:
+      self.statement()
 
   def importer(self):
     self.expect('identifier')
@@ -89,15 +93,43 @@ class Parsing:
       self.statement()
 
   def expression(self):
-    if self.accept('arithmetic_addition'):
-        pass  
-    elif self.accept('arithmetic_subtraction'):
-      pass
-    self.term() 
-    while True:
-      if not (self.accept('arithmetic_addition') or self.accept('arithmetic_subtraction')):
-        break
-      self.term()
+    if self.accept('left_parenthesis'):
+      self.expression()
+      self.expect('right_parenthesis')
+    elif self.accept('string'):
+      self.string_expression()
+    elif self.accept('integer_number'):
+      self.number_expression()
+    elif self.accept('real_number'):
+      self.number_expression()
+    elif self.accept('identifier'):
+      if self.accept('comma', False):
+        self.string_expression()
+      else:
+        self.number_expression()
+    else:
+      self.number_expression()
+  
+  def string_expression(self):
+    while self.accept('comma'):
+      if self.accept('string'):
+        self.string_expression()
+      elif self.accept('identifier'):
+        self.string_expression()
+      else:
+        self.raise_error("", "Mala concatenacion")
+
+  def number_expression(self):
+   if self.accept('arithmetic_addition'):
+     self.number_expression()  
+   elif self.accept('arithmetic_subtraction'):
+     self.number_expression()
+   else:
+     self.term() 
+   while True:
+     if not (self.accept('arithmetic_addition') or self.accept('arithmetic_subtraction')):
+       break
+     self.term()
 
   def term(self):
     self.factor()
@@ -113,13 +145,11 @@ class Parsing:
       pass
     elif self.accept('integer_number'):
       pass
-    elif self.accept('string'):
-      pass
     elif self.accept('left_parenthesis'):
-      self.expression()
+      self.number_expression()
       self.expect('right_parenthesis')
     else:
-      self.raise_error("", "error factor")
+      self.raise_error("", "caga")
   
   def assignment(self):
     self.expression() 
@@ -202,7 +232,6 @@ class Parsing:
         self.expect('colon')
       self.statement()
 
-  
   def print_function(self):
     self.expression() 
      

@@ -1,8 +1,1 @@
-function _hola(a, b, ''){
-  a = 'hola';
-}
-
-function _hola1(a){
-
-  print 'si';
-}
+a = ((a(12)));
