@@ -22,7 +22,7 @@ class Parsing:
           self.get_token()
         return True
     return False
-  
+    
   def expect(self, symbol):
     if self.accept(symbol):
       return True
@@ -159,8 +159,11 @@ class Parsing:
         self.parameter_list()
         self.expect('right_parenthesis')
         self.expect('left_brace')
-        if not self.statement():
-          return self.raise_error("", "Ninguna expresion")
+        while True:
+          if self.statement():
+            continue
+          else:
+            break
         self.expect('right_brace')
         return True
     return False
@@ -195,18 +198,16 @@ class Parsing:
       return False
 
   def statement(self):
-    found_stmt = False
-    while True:
-      if self.assignment_stmt():
-        print "si"
-        continue
-      elif self.print_stmt():
-        continue
-      elif self.if_stmt():
-        continue    
-      else:
-        return False
-    return True 
+    if self.assignment_stmt():
+      return True
+    elif self.print_stmt():
+      return True
+    elif self.if_stmt():
+      return True 
+    elif self.while_stmt():
+      return True
+    else:
+      return False
 
   def assignment_stmt(self):
     if self.target():
@@ -232,6 +233,7 @@ class Parsing:
     elif self.accept('comparison_less_than_or_equal'):
       return True
     elif self.accept('comparison_equal'):
+      print "igual"
       return True
     elif self.accept('comparison_greater_than'):
       return True
@@ -304,24 +306,54 @@ class Parsing:
     if self.accept('if'):
       if self.conditional_expression():
         self.expect('left_brace')
-        if not self.statement():
-          return self.raise_error("", "Ninguna expresion 1 ")
+        while True:
+          if self.statement():
+            continue
+          else:
+            break
         self.expect('right_brace')
       while True:
         if self.accept('elif'):
           if self.conditional_expression():
             self.expect('left_brace')
-            if not self.statement():
-              return self.raise_error("", "Ninguna expresion 2")
+            while True:
+              if self.statement():
+                continue
+              else:
+                break
             self.expect('right_brace')
         else:
           break
       if self.accept('else'):
         self.expect('left_brace')
-        if not self.statement():
-          return self.raise_error("", "Ninguna expresion 3")
+        while True:
+          if self.statement():
+            continue
+          else:
+            break
         self.expect('right_brace')
       return True
     else:
       return False
 
+  def while_stmt(self):
+    if self.accept('while'):
+      if self.conditional_expression():
+        self.expect('left_brace')
+        while True:
+          if self.statement():
+            continue
+          else:
+            break
+        self.expect('right_brace')
+      if self.accept('else'):
+        self.expect('left_brace')
+        while True:
+          if self.statement():
+            continue
+          else:
+            break
+        self.expect('right_brace')
+      return True
+    else:
+      return False
