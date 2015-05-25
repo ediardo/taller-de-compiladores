@@ -1,1 +1,6 @@
-a = _123 + 33.3333 + id;
+function my_fun(){
+  print 'asdasd';
+  if 12 < 13 {
+    b = 3;
+  }
+}

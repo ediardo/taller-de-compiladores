@@ -1,0 +1,36 @@
+{'lexeme': 'function', 'line': 1, 'name': 'function'}
+{'lexeme': 'my_fun', 'line': 1, 'name': 'identifier'}
+{'lexeme': '(', 'line': 1, 'name': 'left_parenthesis'}
+{'lexeme': ')', 'line': 1, 'name': 'right_parenthesis'}
+{'lexeme': '{', 'line': 1, 'name': 'left_brace'}
+{'lexeme': 'print', 'line': 2, 'name': 'print'}
+{'lexeme': "'asdasd'", 'line': 2, 'name': 'string'}
+{'lexeme': ';', 'line': 2, 'name': 'semicolon'}
+{'lexeme': 'print', 'line': 3, 'name': 'print'}
+{'lexeme': "'asdasd'", 'line': 3, 'name': 'string'}
+{'lexeme': ';', 'line': 3, 'name': 'semicolon'}
+{'lexeme': 'print', 'line': 4, 'name': 'print'}
+{'lexeme': "'asdasd'", 'line': 4, 'name': 'string'}
+{'lexeme': ';', 'line': 4, 'name': 'semicolon'}
+{'lexeme': 'b', 'line': 5, 'name': 'identifier'}
+{'lexeme': '=', 'line': 5, 'name': 'assignment'}
+{'lexeme': '123', 'line': 5, 'name': 'integer_number'}
+{'lexeme': '/', 'line': 5, 'name': 'arithmetic_division'}
+{'lexeme': '3', 'line': 5, 'name': 'integer_number'}
+{'lexeme': ';', 'line': 5, 'name': 'semicolon'}
+si
+{'lexeme': 'print', 'line': 6, 'name': 'print'}
+{'lexeme': "'asdasd'", 'line': 6, 'name': 'string'}
+{'lexeme': ';', 'line': 6, 'name': 'semicolon'}
+{'lexeme': 'if', 'line': 7, 'name': 'if'}
+{'lexeme': '12', 'line': 7, 'name': 'integer_number'}
+{'lexeme': '<', 'line': 7, 'name': 'comparison_less_than'}
+{'lexeme': '13', 'line': 7, 'name': 'integer_number'}
+{'lexeme': '{', 'line': 7, 'name': 'left_brace'}
+{'lexeme': 'b', 'line': 8, 'name': 'identifier'}
+{'lexeme': '=', 'line': 8, 'name': 'assignment'}
+{'lexeme': '3', 'line': 8, 'name': 'integer_number'}
+{'lexeme': ';', 'line': 8, 'name': 'semicolon'}
+si
+ Ninguna expresion 1 
+ Ninguna expresion

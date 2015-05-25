@@ -86,13 +86,11 @@ class Parsing:
         if self.u_expression():
           return True
         else:
-          print "aqui1"
           return self.raise_error("", "Falta operador o primary")
       elif self.accept('arithmetic_addition'):
         if self.u_expression():
           return True
         else:
-          print "aqui2"
           return self.raise_error("", "Falta operador o primary")
       return False
 
@@ -100,11 +98,20 @@ class Parsing:
     if self.u_expression():
       while True:
         if self.accept('arithmetic_multiplication'):
-          self.u_expression()
+          if self.u_expression():
+            continue
+          else:
+            return False
         elif self.accept('arithmetic_division'):
-          self.u_expression()
+          if self.u_expression():
+            continue
+          else:
+            return False
         elif self.accept('arithmetic_modulo'):
-          self.u_expression()
+          if self.u_expression():
+            return True
+          else:
+            return False
         else:
           break
       return True
@@ -116,39 +123,34 @@ class Parsing:
       while True:
         if self.accept('arithmetic_addition'):
           if self.m_expression():
-            return True
+            continue
           else:
             return self.raise_error("", "Falta operador o primary")
         elif self.accept('arithmetic_subtraction'):
           if self.m_expression():
-            return True
+            continue
           else:
             return self.raise_error("", "Falta operador o primary")
         else:
-
           break
       return True
     else:
       return False
 
-
-
   def expression(self):
-    while True:
-      if self.a_expression():
-        return True
-      else:
-        break
+    if self.a_expression():
+      return True
     return False
 
   def program(self):
     while True:
       if self.function_definition():
-        pass
+        continue
       elif self.statement():
-        self.expect('semicolon')
+        continue
       else:
         break
+      
 
   def function_definition(self):
     if self.accept('function'):
@@ -157,11 +159,8 @@ class Parsing:
         self.parameter_list()
         self.expect('right_parenthesis')
         self.expect('left_brace')
-        while True:
-          if self.statement():
-            pass
-          else:
-            break
+        if not self.statement():
+          return self.raise_error("", "Ninguna expresion")
         self.expect('right_brace')
         return True
     return False
@@ -196,16 +195,24 @@ class Parsing:
       return False
 
   def statement(self):
-    if self.assignment_stmt():
-      return True
-    return False
-
+    found_stmt = False
+    while True:
+      if self.assignment_stmt():
+        print "si"
+        continue
+      elif self.print_stmt():
+        continue
+      elif self.if_stmt():
+        continue    
+      else:
+        return False
+    return True 
 
   def assignment_stmt(self):
     if self.target():
       self.expect('assignment')
       if self.expression():
-        return True
+        return self.expect('semicolon') 
     return False
 
   def target(self):
@@ -213,127 +220,108 @@ class Parsing:
       return True
     return False 
 
-  def logical_and(self):
-    if self.accept('logical_and'):
-      return True
+  def print_stmt(self):
+    if self.accept('print'):
+      if self.expression():
+        return self.expect('semicolon')
     return False
 
-  def logical_or(self):
-    if self.accept('logical_or'):
-      return True
-    return False
-
-  def logical_not(self):
-    if self.accept('logical_not'):
-      return True
-    return False
-
-  def condition_less_than(self):
-    pass
-
-  def comparison_operator(self):
+  def comp_operator(self):
     if self.accept('comparison_less_than'):
-      pass
+      return True
     elif self.accept('comparison_less_than_or_equal'):
-      pass
+      return True
     elif self.accept('comparison_equal'):
-      pass
-    elif self.accept('comparison_greater_than_or_equal'):
-      pass
+      return True
     elif self.accept('comparison_greater_than'):
-      pass
-    else:
-      return False
-    return True
+      return True
+    elif self.accept('comparison_greter_than_or_equal'):
+      return True
+    elif self.accept('comparison_equal'):
+      return True
+    elif self.accept('comparison_not_equal'):
+      return True
+    return False 
 
-  def logical_expression(self):
-    if self.accept('left_parenthesis'):
-      self.condition()
-      self.expect('right_parenthesis')
-    else:
-      if self.logical_not():
-        self.expression()
-        return True
-      self.expression()
-      if self.accept('ampersand'):
-        pass
-      
+  def comparison(self):
+    if self.a_expression():
       while True:
-        if self.logical_and():
-          self.condition()
-        elif self.logical_or():
-          self.condition()
+        if self.comp_operator():
+          if self.expression():
+            continue
+          else:
+            return self.raise_error("", "Falta expr")
         else:
           break
+      return True
 
-  def if_condition(self):
-    self.expect('left_parenthesis')
-    self.condition()
-    self.expect('right_parenthesis')
-    self.expect('left_brace')
-    self.statement()
-    self.expect('right_brace')
-    if self.accept('else'):
-      self.expect('left_brace')
-      self.statement()
-      self.expect('right_brace')
 
-  def while_loop(self):
-    self.condition()
-    self.expect('left_brace')
-    self.statement()
-    self.expect('right_brace')
-
-  def for_loop(self):
-    self.expect('left_parenthesis')
-    if self.accept('identifier'):
-      if self.accept('assignment'):
-        self.assignment()
-      else:
-        pass
-    self.expect('semicolon')
-    self.condition()
-    if self.accept('comparison_less_than'):
-      pass
-    elif self.accept('comparison_less_than_or_equal'):
-      pass
-    elif self.accept('comparison_equal'):
-      pass
-    elif self.accept('comparison_greater_than'):
-      pass
+  def not_test(self):
+    if self.comparison():
+      return True
     else:
-      self.raise_error("", "error comparativo")
-    self.expression()
-    self.expect('semicolon')
-    self.expect('identifier')
-    if self.accept('increment'):
-      pass
-    elif self.accept('decrement'):
-      pass
-    self.expect('right_parenthesis')
-    self.expect('left_brace')
-    self.statement()
-    self.expect('right_brace')
+      if self.accept('not'):
+        if self.not_test():
+          return True
+        else:
+          self.raise_error("", "Fallo not_test")
+      return False
 
-  def switch(self):
-    self.expect('left_parenthesis')
-    self.expression()
-    self.expect('right_parenthesis')
-    self.expect('left_brace')
-    while True:
-      if not self.accept('case'):
-        self.raise_error("", "error case")
-        break
-      else:
-        self.expression()
-        self.expect('colon')
-      self.statement()
+  def and_test(self):
+    if self.not_test():
+      while True:
+        if self.accept('and'):
+          if self.not_test():
+            continue
+          else:
+            return self.raise_error("", "Fallo and_test") 
+        else:
+          break
+      return True
+    else:
+      return False
 
-  def print_function(self):
-    self.expression() 
-     
-  def call_function(self):
-    self.params()
+  def or_test(self):
+    if self.and_test():
+      while True:
+        if self.accept('or'):
+          if self.and_test():
+            continue
+          else:
+            return self.raise_error("", "Fallo or_test") 
+        else:
+          break
+      return True
+    else:
+      return False
 
-  def search_tabsym(self, item):
-    pass 
+  def conditional_expression(self):
+    if self.or_test():
+      return True
+    return False
+         
+  def if_stmt(self):
+    if self.accept('if'):
+      if self.conditional_expression():
+        self.expect('left_brace')
+        if not self.statement():
+          return self.raise_error("", "Ninguna expresion 1 ")
+        self.expect('right_brace')
+      while True:
+        if self.accept('elif'):
+          if self.conditional_expression():
+            self.expect('left_brace')
+            if not self.statement():
+              return self.raise_error("", "Ninguna expresion 2")
+            self.expect('right_brace')
+        else:
+          break
+      if self.accept('else'):
+        self.expect('left_brace')
+        if not self.statement():
+          return self.raise_error("", "Ninguna expresion 3")
+        self.expect('right_brace')
+      return True
+    else:
+      return False
+
