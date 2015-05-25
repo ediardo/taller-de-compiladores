@@ -12,7 +12,7 @@ class Parsing:
 
   def raise_error(self,type, msg):
     print type, msg
-    exit()
+    return False
 
   def accept(self, symbol, next=True):
     if self.current_token <> None:
@@ -27,135 +27,211 @@ class Parsing:
     if self.accept(symbol):
       return True
     if self.current_token <> None:
-      self.raise_error(" ", "error: se esperaba " + symbol + " y se leyo " + self.current_token['lexeme'])
+      return self.raise_error(" ", "error: se esperaba " + symbol + " y se leyo " + self.current_token['lexeme'])
     else:
-      self.raise_error("", "error: se esperaba " + symbol + " y se llego al final del programa")
+      return self.raise_error("", "error: se esperaba " + symbol + " y se llego al final del programa")
+  
+  def atom(self):
+    if self.accept('identifier'):
+      pass
+    elif self.literal():
+      pass
+    elif self.enclosure():
+      pass
+    else:
+      return False
+    return True
 
+  def enclosure(self):
+    if self.accept('left_parenthesis'):
+      if self.expression():
+        if self.expect('right_parenthesis'):
+          return True
+    return False
+
+  def literal(self):
+    if self.accept('string'):
+      pass
+    elif self.accept('integer_number'):
+      pass
+    elif self.accept('real_number'):
+      pass
+    else:
+      return False
+    return True
+
+  def primary(self):
+    if self.atom():
+      pass
+    else:
+      return False
+    return True
+  
+  def power(self):
+    if self.primary():
+      if self.accept('arithmetic_power'):
+        if self.u_expression():
+          return True
+        else:
+          return False
+      return True
+    else:
+      return False
+
+  def u_expression(self):
+    if self.power():
+      return True
+    else:
+      if self.accept('arithmetic_subtraction'):
+        if self.u_expression():
+          return True
+        else:
+          print "aqui1"
+          return self.raise_error("", "Falta operador o primary")
+      elif self.accept('arithmetic_addition'):
+        if self.u_expression():
+          return True
+        else:
+          print "aqui2"
+          return self.raise_error("", "Falta operador o primary")
+      return False
+
+  def m_expression(self):
+    if self.u_expression():
+      while True:
+        if self.accept('arithmetic_multiplication'):
+          self.u_expression()
+        elif self.accept('arithmetic_division'):
+          self.u_expression()
+        elif self.accept('arithmetic_modulo'):
+          self.u_expression()
+        else:
+          break
+      return True
+    else:
+      return False
+
+  def a_expression(self):
+    if self.m_expression():
+      while True:
+        if self.accept('arithmetic_addition'):
+          if self.m_expression():
+            return True
+          else:
+            return self.raise_error("", "Falta operador o primary")
+        elif self.accept('arithmetic_subtraction'):
+          if self.m_expression():
+            return True
+          else:
+            return self.raise_error("", "Falta operador o primary")
+        else:
+
+          break
+      return True
+    else:
+      return False
+
+
+
+  def expression(self):
+    while True:
+      if self.a_expression():
+        return True
+      else:
+        break
     return False
 
   def program(self):
-    while self.accept('import'): 
-      self.importer()
-    else:
-      self.statement()
-    while self.accept('function'):
-      self.function()
-    else:
-      self.statement()
-
-  def importer(self):
-    self.expect('identifier')
-    self.expect('semicolon')
-
-  def params(self):
-    self.expression()
     while True:
-      if not self.accept('comma'):
-        break
+      if self.function_definition():
+        pass
+      elif self.statement():
+        self.expect('semicolon')
       else:
-        self.expression() 
-    self.expect('right_parenthesis')
+        break
 
-  def function(self):
-    if self.accept('identifier'):
-      self.expect('left_parenthesis')
-      self.params()
-      self.expect('left_brace')
-      self.block()
-      self.expect('right_brace')
+  def function_definition(self):
+    if self.accept('function'):
+      if self.function_name():
+        self.expect('left_parenthesis')
+        self.parameter_list()
+        self.expect('right_parenthesis')
+        self.expect('left_brace')
+        while True:
+          if self.statement():
+            pass
+          else:
+            break
+        self.expect('right_brace')
+        return True
+    return False
+        
+  def function_name(self):
+    return self.expect('identifier')
+    
+  def parameter_list(self):
+    if self.def_parameter():
+      while True:
+        if not self.accept('comma'):
+          break
+        else:
+          if not self.def_parameter():
+            return self.raise_error("", "Falta identificar")
 
-  def block(self):
-    self.statement() 
-  
-  def statement(self):
-    if self.accept('identifier'):
+  def def_parameter(self):
+    if self.parameter():
       if self.accept('assignment'):
-        self.assignment()
-      elif self.accept('left_parenthesis'):
-        self.call_function()
-      self.expect('semicolon')
-      self.statement()
-    elif self.accept('if'):
-      self.if_condition()
-      self.statement()
-    elif self.accept('while'):
-      self.while_loop()
-      self.statement()
-    elif self.accept('for'):
-      self.for_loop()
-      self.statement()
-    elif self.accept('print'):
-      self.print_function()
-      self.expect('semicolon')
-      self.statement()
-    elif self.accept('switch'):
-      self.switch()
-      self.statement()
-
-  def expression(self):
-    if self.accept('left_parenthesis'):
-      self.expression()
-      self.expect('right_parenthesis')
-    elif self.accept('string'):
-      self.string_expression()
-    elif self.accept('integer_number'):
-      self.number_expression()
-    elif self.accept('real_number'):
-      self.number_expression()
-    elif self.accept('identifier'):
-      if self.accept('comma', False):
-        self.string_expression()
-      else:
-        self.number_expression()
+        if self.expression():
+          return True
+        else:
+          return False
+      return True
     else:
-      self.number_expression()
-  
-  def string_expression(self):
-    while self.accept('comma'):
-      if self.accept('string'):
-        self.string_expression()
-      elif self.accept('identifier'):
-        self.string_expression()
-      else:
-        self.raise_error("", "Mala concatenacion")
+      return False
 
-  def number_expression(self):
-   if self.accept('arithmetic_addition'):
-     self.number_expression()  
-   elif self.accept('arithmetic_subtraction'):
-     self.number_expression()
-   else:
-     self.term() 
-   while True:
-     if not (self.accept('arithmetic_addition') or self.accept('arithmetic_subtraction')):
-       break
-     self.term()
-
-  def term(self):
-    self.factor()
-    while True:
-      if not (self.accept('arithmetic_multiplication') or self.accept('arithmetic_division')):
-        break
-      self.factor()
-
-  def factor(self):
+  def parameter(self):
     if self.accept('identifier'):
-      pass
-    elif self.accept('real_number'):
-      pass
-    elif self.accept('integer_number'):
-      pass
-    elif self.accept('left_parenthesis'):
-      self.number_expression()
-      self.expect('right_parenthesis')
+      return True
     else:
-      self.raise_error("", "caga")
-  
-  def assignment(self):
-    self.expression() 
+      return False
 
-  def condition(self):
-    self.expression()
+  def statement(self):
+    if self.assignment_stmt():
+      return True
+    return False
+
+
+  def assignment_stmt(self):
+    if self.target():
+      self.expect('assignment')
+      if self.expression():
+        return True
+    return False
+
+  def target(self):
+    if self.accept('identifier'):
+      return True
+    return False 
+
+  def logical_and(self):
+    if self.accept('logical_and'):
+      return True
+    return False
+
+  def logical_or(self):
+    if self.accept('logical_or'):
+      return True
+    return False
+
+  def logical_not(self):
+    if self.accept('logical_not'):
+      return True
+    return False
+
+  def condition_less_than(self):
+    pass
+
+  def comparison_operator(self):
     if self.accept('comparison_less_than'):
       pass
     elif self.accept('comparison_less_than_or_equal'):
@@ -167,12 +243,33 @@ class Parsing:
     elif self.accept('comparison_greater_than'):
       pass
     else:
-      self.raise_error("", "error comparativo")
-    self.expression()
+      return False
+    return True
+
+  def logical_expression(self):
+    if self.accept('left_parenthesis'):
+      self.condition()
+      self.expect('right_parenthesis')
+    else:
+      if self.logical_not():
+        self.expression()
+        return True
+      self.expression()
+      if self.accept('ampersand'):
+        pass
+      
+      while True:
+        if self.logical_and():
+          self.condition()
+        elif self.logical_or():
+          self.condition()
+        else:
+          break
 
   def if_condition(self):
     self.expect('left_parenthesis')
     self.condition()
+    self.expect('right_parenthesis')
     self.expect('left_brace')
     self.statement()
     self.expect('right_brace')
