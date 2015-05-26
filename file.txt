@@ -1,11 +1,5 @@
 function my_fun(){
-  print 'asdasd';
-  a = 12 /3;
-  if 12 < 13 and bolean == falso {
-    while true3 {
-      print 'hola';
-    }
-  }else{
-    print 'b';
+  for(i = 1; i < 10; i += 1){
+
   }
 }

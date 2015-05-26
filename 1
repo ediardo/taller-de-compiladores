@@ -1,21 +1,7 @@
 class Parsing:
 
   #self.tabsim = []
-  tipos = {
-                'E=E': '', 'R=R': '', 'R=E': '', 
-                'E+E': 'E', 'E+R': 'R', 'R+E': 'R', 'R+R': 'R', 
-                'E-E': 'E', 'E-R': 'R', 'R-E': 'R', 'R-R': 'R', 
-                'E*E': 'E', 'E*R': 'R', 'R*E': 'R', 'R*R': 'R', 
-                'E/E': 'E', 'E/R': 'R', 'R/E': 'R', 'R*R': 'R', 
-                'E%E': 'E', '-E': 'E', '-R': 'R', 
-                'LandL': 'L', 'LorL': 'L', '!L': 'L', 
-                'E>E': 'L', 'E>R': 'L', 'R>E': 'L', 'R>R': 'L',
-                'E<E': 'L', 'E<R': 'L', 'R<E': 'L', 'R<R': 'L',
-                'E>=E': 'L', 'E>=R': 'L', 'R>=E': 'L', 'R>=R': 'L',
-                'E<=E': 'L', 'E<=R': 'L', 'R<=E': 'L', 'R<=R': 'L',
-                'E!=E': 'L', 'E!=R': 'L', 'R!=E': 'L', 'R!=R': 'L',
-                'E==E': 'L', 'E==R': 'L', 'R==E': 'L', 'R==R': 'L'
-  }
+    
   def __init__(self, token_generator):
     self.token_generator = token_generator
     self.get_token()
@@ -47,12 +33,14 @@ class Parsing:
   
   def atom(self):
     if self.accept('identifier'):
-      return True
+      pass
     elif self.literal():
-      return True
+      pass
     elif self.enclosure():
-      return True
-    return False
+      pass
+    else:
+      return False
+    return True
 
   def enclosure(self):
     if self.accept('left_parenthesis'):
@@ -197,7 +185,8 @@ class Parsing:
       if self.accept('assignment'):
         if self.expression():
           return True
-        return False
+        else:
+          return False
       return True
     else:
       return False
@@ -210,31 +199,31 @@ class Parsing:
 
   def statement(self):
     if self.assignment_stmt():
-      return self.expect('semicolon')
-    elif self.augmented_assignment_stmt():
-      return self.expect('semicolon')
+      return True
+    if self.augmented_assignment_stmt():
+      return True
     elif self.print_stmt():
-      return self.expect('semicolon')
+      return True
     elif self.if_stmt():
       return True 
     elif self.while_stmt():
-      return True
-    elif self.for_stmt():
       return True
     else:
       return False
 
   def augmented_assignment_stmt(self):
-    if self.augop():
-      if self.expression():
-        return True
+    if self.target():
+      print "aqio"
+      if self.augop():
+        
+        return self.expression()
     return False
     
   def assignment_stmt(self):
     if self.target():
       if self.accept('assignment'):
         if self.expression():
-          return True
+          return self.expect('semicolon') 
     return False
 
   def target(self):
@@ -392,8 +381,7 @@ class Parsing:
         self.expect('semicolon')
         if self.conditional_expression():
           self.expect('semicolon')
-          if self.accept('identifier') and  self.augmented_assignment_stmt():
-            self.expect('right_parenthesis')
+          if self.augmented_assignment_stmt():
             self.expect('left_brace')
             while True:
               if self.statement():
