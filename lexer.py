@@ -40,7 +40,7 @@ class Lexer:
           if current_state == 'A':
             lexeme_name = self.states[int(previous_state)][-1]
             if lexeme in self.keywords:
-              lexeme_name = lexeme
+              lexeme_name = lexeme if lexeme not in ['true', 'false'] else 'boolean'
             #print "Char: ", char, ", Line: ", line_pos + 1, ", Col: ", col_position, ", Symbol: ", symbol, ", Prev State: ", previous_state, ", Current state: ", current_state
             yield dict({'name': lexeme_name, 'lexeme': lexeme, 'line': line_pos + 1})
             lexeme = ""

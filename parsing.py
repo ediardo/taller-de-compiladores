@@ -1,32 +1,61 @@
 class Parsing:
 
-  #self.tabsim = []
-  tipos = {
-                'E=E': '', 'R=R': '', 'R=E': '', 
-                'E+E': 'E', 'E+R': 'R', 'R+E': 'R', 'R+R': 'R', 
-                'E-E': 'E', 'E-R': 'R', 'R-E': 'R', 'R-R': 'R', 
-                'E*E': 'E', 'E*R': 'R', 'R*E': 'R', 'R*R': 'R', 
-                'E/E': 'E', 'E/R': 'R', 'R/E': 'R', 'R*R': 'R', 
-                'E%E': 'E', '-E': 'E', '-R': 'R', 
+  symtab = []
+  ctypes = {
+                'I=I': '', 'R=R': '', 'R=I': '', 
+                'I+I': 'I', 'I+R': 'R', 'R+I': 'R', 'R+R': 'R', 'S+S': 'S', 
+                'I-I': 'I', 'I-R': 'R', 'R-I': 'R', 'R-R': 'R', 
+                'I*I': 'I', 'I*R': 'R', 'R*I': 'R', 'R*R': 'R', 'S*S': 'S',
+                'I/I': 'I', 'I/R': 'R', 'R/I': 'R', 'R/R': 'R', 
+                'I%I': 'I', '-I': 'I', '-R': 'R', 
                 'LandL': 'L', 'LorL': 'L', '!L': 'L', 
-                'E>E': 'L', 'E>R': 'L', 'R>E': 'L', 'R>R': 'L',
-                'E<E': 'L', 'E<R': 'L', 'R<E': 'L', 'R<R': 'L',
-                'E>=E': 'L', 'E>=R': 'L', 'R>=E': 'L', 'R>=R': 'L',
-                'E<=E': 'L', 'E<=R': 'L', 'R<=E': 'L', 'R<=R': 'L',
-                'E!=E': 'L', 'E!=R': 'L', 'R!=E': 'L', 'R!=R': 'L',
-                'E==E': 'L', 'E==R': 'L', 'R==E': 'L', 'R==R': 'L'
+                'I>I': 'L', 'I>R': 'L', 'R>I': 'L', 'R>R': 'L', 'S>S': 'L',
+                'I<I': 'L', 'I<R': 'L', 'R<I': 'L', 'R<R': 'L', 'S<S': 'L',
+                'I>=I': 'L', 'I>=R': 'L', 'R>=I': 'L', 'R>=R': 'L',
+                'I<=I': 'L', 'I<=R': 'L', 'R<=I': 'L', 'R<=R': 'L',
+                'I!=I': 'L', 'I!=R': 'L', 'R!=I': 'L', 'R!=R': 'L',
+                'I==I': 'L', 'I==R': 'L', 'R==I': 'L', 'R==R': 'L', 'S==S': 'L'
   }
+  ptypes = []
+  previous_token = None
+  current_token = None
+
   def __init__(self, token_generator):
     self.token_generator = token_generator
     self.get_token()
     self.program()
 
   def get_token(self):
+    self.previous_token = self.current_token
     self.current_token = next(self.token_generator, None)
 
   def raise_error(self,type, msg):
     print type, msg
     return False
+
+  def insert_symtab(self, symbol_name, type, scope):
+    self.symtab.append({'symbol_name': symbol_name, 'type': type, 'scope': scope})
+
+  def in_symtab(self, symbol_name):
+    for sym in self.symtab:
+      if symbol_name in sym.values():
+        return sym
+    return False
+
+  def get_ctype(self, input):
+    return self.ctypes.get(input)
+
+  def get_data_type(self):
+    if self.current_token['name'] == 'real_number':
+      return 'R'
+    elif self.current_token['name'] == 'integer_number':
+      return 'I'
+    elif self.current_token['name'] == 'string':
+      return 'S'
+    elif self.current_token['name'] == 'boolean':
+      return 'B'
+    else:
+      return self.raise_error('', 'error: se esperaba tipo de dato y se encontro ' + symbol)
 
   def accept(self, symbol, next=True):
     if self.current_token <> None:
@@ -46,7 +75,13 @@ class Parsing:
       return self.raise_error("", "error: se esperaba " + symbol + " y se llego al final del programa")
   
   def atom(self):
-    if self.accept('identifier'):
+    if self.accept('identifier', False):
+      symtab = self.in_symtab(self.current_token['lexeme'])
+      if not symtab:
+        self.raise_error('', 'error: el identificador ' + self.current_token['lexeme'] + ' no ha sido identificado')
+      else:
+        self.ptipos.append(symtab['type'])
+      self.get_token()
       return True
     elif self.literal():
       return True
@@ -61,23 +96,32 @@ class Parsing:
           return True
     return False
 
+  def is_boolean(self):
+    if self.accept('false'):
+      return True
+    elif self.accept('true'):
+      return True
+    return False
+
   def literal(self):
     if self.accept('string'):
-      pass
+      self.ptypes.append('S')
+      return True
     elif self.accept('integer_number'):
-      pass
+      self.ptypes.append('I')
+      return True
     elif self.accept('real_number'):
-      pass
-    else:
-      return False
-    return True
+      self.ptypes.append('R')
+      return True
+    elif self.accept('boolean'):
+      self.ptypes.append('B')
+      return True
+    return False
 
   def primary(self):
     if self.atom():
-      pass
-    else:
-      return False
-    return True
+      return True
+    return False
   
   def power(self):
     if self.primary():
@@ -95,51 +139,71 @@ class Parsing:
       return True
     else:
       if self.accept('arithmetic_subtraction'):
+        operator = self.previous_token['lexeme']
         if self.u_expression():
-          return True
-        else:
-          return self.raise_error("", "Falta operador o primary")
-      elif self.accept('arithmetic_addition'):
-        if self.u_expression():
+          dtype_right = self.ptypes.pop()
+          type = str(operator) + dtype_right
+          if self.get_ctype(type) is not None:
+            self.ptypes.append(self.get_ctype(type))
+          else:
+            self.raise_error('Error semantico: ', 'Conflicto en tipos en la operacion')
           return True
         else:
           return self.raise_error("", "Falta operador o primary")
       return False
+
+  def get_dtype(self, operator):
+    dtype_right = self.ptypes.pop()
+    dtype_left = self.ptypes.pop()
+    tp = dtype_left + str(operator) + dtype_right
+    if self.get_ctype(tp) is not None:
+      self.ptypes.append(self.get_ctype(tp))
+    else:
+      self.raise_error('Error semantico: ', 'Conflicto en tipos en la operacion')
 
   def m_expression(self):
     if self.u_expression():
       while True:
         if self.accept('arithmetic_multiplication'):
+          operator = self.previous_token['lexeme']
           if self.u_expression():
+            self.get_dtype(operator)
             continue
           else:
             return False
         elif self.accept('arithmetic_division'):
+          operator = self.previous_token['lexeme']
           if self.u_expression():
+            self.get_dtype(operator)
             continue
           else:
             return False
         elif self.accept('arithmetic_modulo'):
+          operator = self.previous_token['lexeme']
           if self.u_expression():
-            return True
+            self.get_dtype(operator)
+            continue
           else:
             return False
         else:
           break
       return True
-    else:
-      return False
+    return False
 
   def a_expression(self):
     if self.m_expression():
       while True:
         if self.accept('arithmetic_addition'):
+          operator = self.previous_token['lexeme']
           if self.m_expression():
+            self.get_dtype(operator)
             continue
           else:
             return self.raise_error("", "Falta operador o primary")
         elif self.accept('arithmetic_subtraction'):
+          operator = self.previous_token['lexeme']
           if self.m_expression():
+            self.get_dtype(operator)
             continue
           else:
             return self.raise_error("", "Falta operador o primary")
@@ -162,6 +226,7 @@ class Parsing:
         continue
       else:
         break
+    print self.ptypes
       
 
   def function_definition(self):
@@ -232,6 +297,7 @@ class Parsing:
     
   def assignment_stmt(self):
     if self.target():
+      symbol_name = self.current_token['lexeme']
       if self.accept('assignment'):
         if self.expression():
           return True
@@ -245,7 +311,7 @@ class Parsing:
   def print_stmt(self):
     if self.accept('print'):
       if self.expression():
-        return self.expect('semicolon')
+        return True
     return False
 
   def augop(self):
