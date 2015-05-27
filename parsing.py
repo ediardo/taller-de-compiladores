@@ -8,7 +8,7 @@ class Parsing:
                 'I*I': 'I', 'I*R': 'R', 'R*I': 'R', 'R*R': 'R', 'S*S': 'S',
                 'I/I': 'I', 'I/R': 'R', 'R/I': 'R', 'R/R': 'R', 
                 'I%I': 'I', '-I': 'I', '-R': 'R', 
-                'LandL': 'L', 'LorL': 'L', '!L': 'L', 
+                'LandL': 'L', 'LorL': 'L', 'notL': 'L', 
                 'I>I': 'L', 'I>R': 'L', 'R>I': 'L', 'R>R': 'L', 'S>S': 'L',
                 'I<I': 'L', 'I<R': 'L', 'R<I': 'L', 'R<R': 'L', 'S<S': 'L',
                 'I>=I': 'L', 'I>=R': 'L', 'R>=I': 'L', 'R>=R': 'L',
@@ -78,7 +78,7 @@ class Parsing:
     if self.accept('identifier', False):
       symtab = self.in_symtab(self.current_token['lexeme'])
       if not symtab:
-        self.raise_error('', 'error: el identificador ' + self.current_token['lexeme'] + ' no ha sido identificado')
+        self.raise_error('Error Semantico: ', 'el identificador ' + self.current_token['lexeme'] + ' no ha sido declarado')
       else:
         self.ptipos.append(symtab['type'])
       self.get_token()
@@ -157,6 +157,7 @@ class Parsing:
     dtype_left = self.ptypes.pop()
     tp = dtype_left + str(operator) + dtype_right
     if self.get_ctype(tp) is not None:
+      print tp
       self.ptypes.append(self.get_ctype(tp))
     else:
       self.raise_error('Error semantico: ', 'Conflicto en tipos en la operacion')
@@ -339,16 +340,19 @@ class Parsing:
     return False 
 
   def comparison(self):
-    if self.a_expression():
+    if self.expression():
       while True:
         if self.comp_operator():
+          operator = self.previous_token['lexeme']
           if self.expression():
+            self.get_dtype(operator)
             continue
           else:
-            return self.raise_error("", "Falta expr")
+            return self.raise_error("Error Sintactico:", "Falta expresion")
         else:
           break
       return True
+    return False
 
 
   def not_test(self):
@@ -356,10 +360,18 @@ class Parsing:
       return True
     else:
       if self.accept('not'):
+        operator = 'not'
         if self.not_test():
+          dtype_right = self.ptypes.pop()
+          type = str(operator) + dtype_right
+          if self.get_ctype(type) is not None:
+            print type
+            self.ptypes.append(self.get_ctype(type))
+          else:
+            self.raise_error('Error semantico: ', 'Conflicto en tipos en la operacion')
           return True
         else:
-          self.raise_error("", "Fallo not_test")
+          self.raise_error('Error sintactico', 'Se esperaba expresion')
       return False
 
   def and_test(self):
