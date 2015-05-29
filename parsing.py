@@ -14,7 +14,7 @@ class Parsing:
                 'I>=I': 'L', 'I>=R': 'L', 'R>=I': 'L', 'R>=R': 'L',
                 'I<=I': 'L', 'I<=R': 'L', 'R<=I': 'L', 'R<=R': 'L',
                 'I!=I': 'L', 'I!=R': 'L', 'R!=I': 'L', 'R!=R': 'L',
-                'I==I': 'L', 'I==R': 'L', 'R==I': 'L', 'R==R': 'L', 'S==S': 'L'
+                'I==I': 'L', 'I==R': 'L', 'R==I': 'L', 'R==R': 'L', 'S==S': 'L', 'B==B': 'L', 'B': 'L'
   }
   ptypes = []
   previous_token = None
@@ -35,7 +35,8 @@ class Parsing:
 
   def insert_symtab(self, symbol_name, type, scope):
     self.symtab.append({'symbol_name': symbol_name, 'type': type, 'scope': scope})
-
+  def update_symtab(self, symbol_name):
+    se
   def in_symtab(self, symbol_name):
     for sym in self.symtab:
       if symbol_name in sym.values():
@@ -53,7 +54,7 @@ class Parsing:
     elif self.current_token['name'] == 'string':
       return 'S'
     elif self.current_token['name'] == 'boolean':
-      return 'B'
+      return 'L'
     else:
       return self.raise_error('', 'error: se esperaba tipo de dato y se encontro ' + symbol)
 
@@ -80,7 +81,7 @@ class Parsing:
       if not symtab:
         self.raise_error('Error Semantico: ', 'el identificador ' + self.current_token['lexeme'] + ' no ha sido declarado')
       else:
-        self.ptipos.append(symtab['type'])
+        self.ptypes.append(symtab['type'])
       self.get_token()
       return True
     elif self.literal():
@@ -114,7 +115,7 @@ class Parsing:
       self.ptypes.append('R')
       return True
     elif self.accept('boolean'):
-      self.ptypes.append('B')
+      self.ptypes.append('L')
       return True
     return False
 
@@ -153,14 +154,15 @@ class Parsing:
       return False
 
   def get_dtype(self, operator):
-    dtype_right = self.ptypes.pop()
-    dtype_left = self.ptypes.pop()
-    tp = dtype_left + str(operator) + dtype_right
-    if self.get_ctype(tp) is not None:
-      print tp
-      self.ptypes.append(self.get_ctype(tp))
-    else:
-      self.raise_error('Error semantico: ', 'Conflicto en tipos en la operacion')
+    if len(self.ptypes) > 1:
+      dtype_right = self.ptypes.pop()
+      dtype_left = self.ptypes.pop()
+      tp = dtype_left + str(operator) + dtype_right
+      if self.get_ctype(tp) is not None:
+        print tp
+        self.ptypes.append(self.get_ctype(tp))
+      else:
+        self.raise_error('Error semantico: ', 'Conflicto en tipos en la operacion')
 
   def m_expression(self):
     if self.u_expression():
@@ -228,7 +230,7 @@ class Parsing:
       else:
         break
     print self.ptypes
-      
+    print self.symtab  
 
   def function_definition(self):
     if self.accept('function'):
@@ -298,9 +300,10 @@ class Parsing:
     
   def assignment_stmt(self):
     if self.target():
-      symbol_name = self.current_token['lexeme']
+      symbol_name = self.previous_token['lexeme']
       if self.accept('assignment'):
         if self.expression():
+          self.insert_symtab(symbol_name, self.ptypes[-1], 'var')
           return True
     return False
 
@@ -378,7 +381,9 @@ class Parsing:
     if self.not_test():
       while True:
         if self.accept('and'):
-          if self.not_test():
+          operator = 'and'
+          if self.and_test():
+            self.get_dtype(operator)
             continue
           else:
             return self.raise_error("", "Fallo and_test") 
@@ -392,7 +397,9 @@ class Parsing:
     if self.and_test():
       while True:
         if self.accept('or'):
-          if self.and_test():
+          operator = 'or'
+          if self.or_test():
+            self.get_dtype(operator)
             continue
           else:
             return self.raise_error("", "Fallo or_test") 
