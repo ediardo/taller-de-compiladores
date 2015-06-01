@@ -33,11 +33,10 @@ class Parsing:
     print type, msg
     return False
 
-  def insert_symtab(self, symbol_name, type, scope):
-    self.symtab.append({'symbol_name': symbol_name, 'type': type, 'scope': scope})
-  def update_symtab(self, symbol_name):
-    se
-  def in_symtab(self, symbol_name):
+  def insert_symtab(self, symbol_name, class_name, scope):
+    self.symtab.append({'symbol_name': symbol_name, 'class_name': class_name, 'scope': scope})
+
+  def lookup_symtab(self, symbol_name):
     for sym in self.symtab:
       if symbol_name in sym.values():
         return sym
@@ -77,11 +76,11 @@ class Parsing:
   
   def atom(self):
     if self.accept('identifier', False):
-      symtab = self.in_symtab(self.current_token['lexeme'])
+      symtab = self.lookup_symtab(self.current_token['lexeme'])
       if not symtab:
         self.raise_error('Error Semantico: ', 'el identificador ' + self.current_token['lexeme'] + ' no ha sido declarado')
       else:
-        self.ptypes.append(symtab['type'])
+        self.ptypes.append(symtab['class_name'])
       self.get_token()
       return True
     elif self.literal():
@@ -134,7 +133,9 @@ class Parsing:
       return True
     else:
       return False
-
+  """
+    unary expression
+  """
   def u_expression(self):
     if self.power():
       return True
@@ -148,6 +149,7 @@ class Parsing:
             self.ptypes.append(self.get_ctype(type))
           else:
             self.raise_error('Error semantico: ', 'Conflicto en tipos en la operacion')
+            return False
           return True
         else:
           return self.raise_error("", "Falta operador o primary")
@@ -159,8 +161,8 @@ class Parsing:
       dtype_left = self.ptypes.pop()
       tp = dtype_left + str(operator) + dtype_right
       if self.get_ctype(tp) is not None:
-        print tp
         self.ptypes.append(self.get_ctype(tp))
+        return True
       else:
         self.raise_error('Error semantico: ', 'Conflicto en tipos en la operacion')
 
@@ -169,21 +171,23 @@ class Parsing:
       while True:
         if self.accept('arithmetic_multiplication'):
           operator = self.previous_token['lexeme']
-          if self.u_expression():
-            self.get_dtype(operator)
+          if self.m_expression():
+            if not self.get_dtype(operator):
+              return False
             continue
           else:
             return False
         elif self.accept('arithmetic_division'):
           operator = self.previous_token['lexeme']
-          if self.u_expression():
-            self.get_dtype(operator)
+          if self.m_expression():
+            if not self.get_dtype(operator):
+              return False
             continue
           else:
             return False
         elif self.accept('arithmetic_modulo'):
           operator = self.previous_token['lexeme']
-          if self.u_expression():
+          if self.m_expression():
             self.get_dtype(operator)
             continue
           else:
@@ -198,15 +202,17 @@ class Parsing:
       while True:
         if self.accept('arithmetic_addition'):
           operator = self.previous_token['lexeme']
-          if self.m_expression():
-            self.get_dtype(operator)
+          if self.a_expression():
+            if not self.get_dtype(operator):
+              return False
             continue
           else:
             return self.raise_error("", "Falta operador o primary")
         elif self.accept('arithmetic_subtraction'):
           operator = self.previous_token['lexeme']
-          if self.m_expression():
-            self.get_dtype(operator)
+          if self.a_expression():
+            if not self.get_dtype(operator):
+              return False
             continue
           else:
             return self.raise_error("", "Falta operador o primary")
@@ -230,15 +236,18 @@ class Parsing:
       else:
         break
     print self.ptypes
-    print self.symtab  
+    for sym in self.symtab:
+      print sym
 
   def function_definition(self):
     if self.accept('function'):
       if self.function_name():
+        symbol_name = self.previous_token['lexeme']
         self.expect('left_parenthesis')
         self.parameter_list()
         self.expect('right_parenthesis')
         self.expect('left_brace')
+        self.insert_symtab(symbol_name, 'function', 'extern')
         while True:
           if self.statement():
             continue
@@ -258,7 +267,7 @@ class Parsing:
           break
         else:
           if not self.def_parameter():
-            return self.raise_error("", "Falta identificar")
+            return self.raise_error("Error sintactico", "Falta Identificador")
 
   def def_parameter(self):
     if self.parameter():
@@ -278,6 +287,7 @@ class Parsing:
 
   def statement(self):
     if self.assignment_stmt():
+      self.ptypes = []
       return self.expect('semicolon')
     elif self.augmented_assignment_stmt():
       return self.expect('semicolon')
@@ -374,7 +384,7 @@ class Parsing:
             self.raise_error('Error semantico: ', 'Conflicto en tipos en la operacion')
           return True
         else:
-          self.raise_error('Error sintactico', 'Se esperaba expresion')
+          self.raise_error('Error sintactico:', 'Se esperaba expresion')
       return False
 
   def and_test(self):
@@ -411,6 +421,7 @@ class Parsing:
 
   def conditional_expression(self):
     if self.or_test():
+      self.ptype = []
       return True
     return False
          
