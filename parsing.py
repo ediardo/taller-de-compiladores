@@ -19,6 +19,7 @@ class Parsing:
   ptypes = []
   previous_token = None
   current_token = None
+  current_scope = None
 
   def __init__(self, token_generator):
     self.token_generator = token_generator
@@ -33,8 +34,8 @@ class Parsing:
     print type, msg
     return False
 
-  def insert_symtab(self, symbol_name, class_name, scope):
-    self.symtab.append({'symbol_name': symbol_name, 'class_name': class_name, 'scope': scope})
+  def insert_symtab(self, symbol_name, type, scope, size):
+    self.symtab.append({'symbol_name': symbol_name, 'type': type, 'scope': scope, 'size': size})
 
   def lookup_symtab(self, symbol_name):
     for sym in self.symtab:
@@ -228,6 +229,7 @@ class Parsing:
     return False
 
   def program(self):
+    self.current_scope = 'global'
     while True:
       if self.function_definition():
         continue
@@ -243,17 +245,19 @@ class Parsing:
     if self.accept('function'):
       if self.function_name():
         symbol_name = self.previous_token['lexeme']
+        self.insert_symtab(symbol_name, 'function', self.current_scope, None)
         self.expect('left_parenthesis')
+        self.current_scope = 'local'
         self.parameter_list()
         self.expect('right_parenthesis')
         self.expect('left_brace')
-        self.insert_symtab(symbol_name, 'function', 'extern')
         while True:
           if self.statement():
             continue
           else:
             break
         self.expect('right_brace')
+        self.current_scope = 'global'
         return True
     return False
         
@@ -271,10 +275,12 @@ class Parsing:
 
   def def_parameter(self):
     if self.parameter():
+      symbol_name = self.previous_token['lexeme']
       if self.accept('assignment'):
         if self.expression():
           return True
         return False
+      self.insert_symtab(symbol_name, 'function_param', 'local', None)
       return True
     else:
       return False
@@ -282,8 +288,7 @@ class Parsing:
   def parameter(self):
     if self.accept('identifier'):
       return True
-    else:
-      return False
+    return False
 
   def statement(self):
     if self.assignment_stmt():
@@ -299,8 +304,29 @@ class Parsing:
       return True
     elif self.for_stmt():
       return True
+    elif self.return_stmt():
+      return self.expect('semicolon')
     else:
       return False
+  
+  def get_size(self):
+    if self.ptypes[-1] == 'I':
+      return 8
+    if self.ptypes[-1] == 'R':
+      return 8
+    if self.ptypes[-1] == 'L':
+      return 1
+    if self.ptypes[-1] == 'S':
+      return len(self.previous_token['lexeme'][1:-1])
+
+  def return_stmt(self):
+    if self.accept('return'):
+      if self.expression():
+        if self.current_scope == 'local':
+          return True
+        else:
+          self.raise_error("Error semantico", 'No se puede utiliza return fuera de una funcion')
+    return False
 
   def augmented_assignment_stmt(self):
     if self.augop():
@@ -313,7 +339,7 @@ class Parsing:
       symbol_name = self.previous_token['lexeme']
       if self.accept('assignment'):
         if self.expression():
-          self.insert_symtab(symbol_name, self.ptypes[-1], 'var')
+          self.insert_symtab(symbol_name, self.ptypes[-1], self.current_scope, self.get_size() )
           return True
     return False
 
